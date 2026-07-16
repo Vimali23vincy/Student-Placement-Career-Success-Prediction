@@ -1,0 +1,125 @@
+"""
+PlacifyAI – AI-Powered Placement Prediction Platform
+=====================================================
+Main application entry point.
+Bootstrap routing, theme initialization, and navigation configurations.
+"""
+
+import streamlit as st
+import sys
+import os
+
+# Add project root and src to path
+sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
+
+from src.styles import inject_global_css, COLORS
+
+def show_home():
+    """Render the main landing page content."""
+    # ── Landing Hero ─────────────────────────────────────────────────────────
+    st.markdown(
+        """
+        <div style="text-align: center; padding: 50px 20px 20px 20px;">
+            <div style="font-size: 4.5rem; margin-bottom: 16px; animation: bounce 2s infinite;">🎯</div>
+            <h1 style="
+                font-size: 3.5rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 16px;
+                line-height: 1.2;
+            ">PlacifyAI</h1>
+            <p style="
+                font-size: 1.25rem;
+                color: #94a3b8;
+                max-width: 650px;
+                margin: 0 auto 40px auto;
+                line-height: 1.6;
+            ">
+                AI-Powered Campus Placement Intelligence Platform.<br>
+                Predict student placement status and company types with machine learning models.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ── Interactive Navigation Cards ─────────────────────────────────────────
+    _, col_dash, col_pred, _ = st.columns([1, 2, 2, 1])
+
+    with col_dash:
+        st.page_link(
+            dashboard_page,
+            label="Dashboard\nAnalytics & Placement Insights",
+            icon=None
+        )
+
+    with col_pred:
+        st.page_link(
+            predictor_page,
+            label="Predictor\nML-Powered Profile Predictions",
+            icon=None
+        )
+
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    # ── Navigation Instructions ──────────────────────────────────────────────
+    st.markdown(
+        """
+        <div style="text-align: center; color: #64748b; padding: 10px;">
+            <p style="font-size: 0.95rem;">
+                👈 Use the <strong style="color: #4f46e5;">sidebar menu</strong> or select a card above to begin your journey.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ── Page Registration & Configuration ────────────────────────────────────────
+home_page = st.Page(show_home, title="Home", icon="🎯", default=True)
+dashboard_page = st.Page("pages/Dashboard.py", title="Dashboard", icon="📊")
+predictor_page = st.Page("pages/Predictor.py", title="Predictor", icon="🔮")
+
+# Configure routing table
+pg = st.navigation({
+    "Navigation": [home_page, dashboard_page, predictor_page]
+})
+
+st.set_page_config(
+    page_title="PlacifyAI – Placement Intelligence",
+    page_icon="🎯",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+# Inject global styles and themes
+inject_global_css()
+
+# Render Sidebar header branding
+with st.sidebar:
+    st.markdown(
+        """
+        <div style="text-align: center; padding: 16px 0 8px 0;">
+            <span style="font-size: 2.2rem;">🎯</span>
+            <h2 style="
+                font-size: 1.4rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #4f46e5, #06b6d4);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin: 8px 0 4px 0;
+            ">PlacifyAI</h2>
+            <p style="color: #64748b; font-size: 0.8rem; margin: 0; font-weight: 500;">v1.0 · Phase 1</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown("---")
+
+# Execute navigation router
+pg.run()
