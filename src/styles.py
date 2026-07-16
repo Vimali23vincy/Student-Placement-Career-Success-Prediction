@@ -121,10 +121,6 @@ def inject_global_css():
         button[data-testid="stBaseButton-headerNoPadding"] div,
         button[data-testid*="CollapseButton"] span,
         button[data-testid*="CollapseButton"] div,
-        [data-testid="stHeader"] button span,
-        [data-testid="stHeader"] button div,
-        [data-testid="stSidebar"] button span,
-        [data-testid="stSidebar"] button div,
         button[data-testid="stBaseButton-headerNoPadding"] *:not(svg):not(path),
         button[data-testid*="CollapseButton"] *:not(svg):not(path) {{
             display: none !important;
