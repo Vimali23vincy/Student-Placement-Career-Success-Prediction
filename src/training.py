@@ -24,7 +24,7 @@ from preprocessing import (
     load_data,
     prepare_placement_data,
     prepare_company_data,
-    save_encoder,
+    save_feature_columns,
     FEATURES,
 )
 
@@ -132,7 +132,7 @@ def evaluate_model(model, X_test, y_test, label_names=None):
 
     # Feature importance
     importance = pd.DataFrame(
-        {"feature": FEATURES, "importance": model.feature_importances_}
+        {"feature": X_test.columns, "importance": model.feature_importances_}
     ).sort_values("importance", ascending=False)
     print("\n🏆 Feature Importance:")
     print(importance.to_string(index=False))
@@ -169,7 +169,7 @@ def main():
     print("  MODEL 1: Placement Status Prediction")
     print("─" * 60)
 
-    X_placement, y_placement, encoder = prepare_placement_data(df)
+    X_placement, y_placement = prepare_placement_data(df)
     X_train_p, X_test_p, y_train_p, y_test_p = train_test_split(
         X_placement, y_placement, test_size=0.2, random_state=42, stratify=y_placement
     )
@@ -187,7 +187,8 @@ def main():
     print("  MODEL 2: Company Type Prediction (Placed Students Only)")
     print("─" * 60)
 
-    X_company, y_company = prepare_company_data(df, encoder)
+    X_company, y_company = prepare_company_data(df)
+    X_company = X_company.reindex(columns=X_placement.columns, fill_value=0)
     X_train_c, X_test_c, y_train_c, y_test_c = train_test_split(
         X_company, y_company, test_size=0.2, random_state=42, stratify=y_company
     )
@@ -207,7 +208,7 @@ def main():
 
     save_model(placement_model, os.path.join(MODELS_DIR, "placement_model.pkl"))
     save_model(company_model, os.path.join(MODELS_DIR, "company_model.pkl"))
-    save_encoder(encoder, os.path.join(MODELS_DIR, "encoder.pkl"))
+    save_feature_columns(X_placement.columns.tolist(), os.path.join(MODELS_DIR, "feature_columns.joblib"))
 
     print("\n✅ Training complete! All models saved to models/")
     print("=" * 60)

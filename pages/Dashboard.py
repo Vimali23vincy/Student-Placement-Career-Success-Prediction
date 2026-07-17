@@ -374,12 +374,4 @@ fig7.update_traces(marker_line_width=0)
 st.plotly_chart(style_fig(fig7, 450), use_container_width=True)
 
 
-# ── Footer ─────────────────────────────────────────────────────────────────────
-st.markdown(
-    """
-    <div style="text-align: center; padding: 32px 0 16px 0; color: #64748b; font-size: 0.75rem;">
-        PlacifyAI v1.0 · Built with Streamlit & Plotly · Phase 1
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+

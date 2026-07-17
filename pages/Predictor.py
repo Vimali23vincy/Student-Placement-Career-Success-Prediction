@@ -29,23 +29,7 @@ def get_branches():
 
 branches = get_branches()
 
-# ── Sidebar Help Panel ──────────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("### 🔍 Information")
-    st.markdown(
-        """
-        <div style="padding: 14px; background: rgba(79, 70, 229, 0.08); border-radius: 12px; border: 1px solid rgba(79, 70, 229, 0.2);">
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 0; line-height: 1.6;">
-                <strong style="color: #f1f5f9;">ML Workflow:</strong><br>
-                1. <strong>Academic Evaluation:</strong> Analyzes branch, tier, CGPA, and backlog history.<br>
-                2. <strong>Technical Strength:</strong> Evaluates coding problems, repos, and hackathons.<br>
-                3. <strong>Employability Check:</strong> Considers internship history, communication, and aptitude.<br>
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    st.markdown("---")
+
 
 # ── Page Header ────────────────────────────────────────────────────────────────
 st.markdown(
@@ -213,6 +197,7 @@ if submitted:
     student_data = {
         "college_tier": college_tier,
         "branch": branch,
+        "degree": "B.Tech",
         "cgpa": cgpa,
         "backlog_history": backlog,
         "DSA_problems_solved": dsa,
@@ -341,11 +326,4 @@ if submitted:
         unsafe_allow_html=True,
     )
 
-st.markdown(
-    """
-    <div style="text-align: center; padding: 32px 0 16px 0; color: #64748b; font-size: 0.75rem;">
-        PlacifyAI v1.0 · Built with Streamlit & Plotly · Phase 1
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+

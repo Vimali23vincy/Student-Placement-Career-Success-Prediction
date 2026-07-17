@@ -10,13 +10,14 @@ import os
 
 import streamlit as st
 
-from preprocessing import FEATURES, CATEGORICAL_FEATURES
+# No longer using FEATURES or CATEGORICAL_FEATURES from preprocessing here.
+# Features will be dynamically aligned using loaded feature columns.
 
 
 @st.cache_resource
 def load_models(models_dir: str = "models"):
     """
-    Load all trained models and encoders.
+    Load all trained models and feature columns list.
 
     Returns
     -------
@@ -24,17 +25,17 @@ def load_models(models_dir: str = "models"):
         Model for placement status prediction.
     company_model : RandomForestClassifier
         Model for company type prediction.
-    encoder : dict
-        Fitted label encoders.
+    feature_columns : list
+        List of feature columns used during model training.
     """
     placement_model = joblib.load(os.path.join(models_dir, "placement_model.pkl"))
     company_model = joblib.load(os.path.join(models_dir, "company_model.pkl"))
-    encoder = joblib.load(os.path.join(models_dir, "encoder.pkl"))
+    feature_columns = joblib.load(os.path.join(models_dir, "feature_columns.joblib"))
 
-    return placement_model, company_model, encoder
+    return placement_model, company_model, feature_columns
 
 
-def prepare_input(student_data: dict, encoder: dict) -> pd.DataFrame:
+def prepare_input(student_data: dict, feature_columns: list) -> pd.DataFrame:
     """
     Prepare a single student's data for prediction.
 
@@ -42,28 +43,26 @@ def prepare_input(student_data: dict, encoder: dict) -> pd.DataFrame:
     ----------
     student_data : dict
         Dictionary with feature names as keys and raw values.
-    encoder : dict
-        Fitted label encoders for categorical features.
+    feature_columns : list
+        List of feature columns used during model training.
 
     Returns
     -------
     input_df : pd.DataFrame
-        Single-row DataFrame ready for model prediction.
+        Single-row DataFrame aligned with training features.
     """
     input_df = pd.DataFrame([student_data])
 
-    # Encode categorical features
-    for col in CATEGORICAL_FEATURES:
-        if col in input_df.columns:
-            input_df[col] = encoder[col].transform(input_df[col].astype(str))
+    # Apply pd.get_dummies to convert categoricals to dummies
+    input_df = pd.get_dummies(input_df, dtype=int)
 
-    # Ensure correct feature order
-    input_df = input_df[FEATURES]
+    # Reindex columns to match training feature columns exactly, filling missing ones with 0
+    input_df = input_df.reindex(columns=feature_columns, fill_value=0)
 
     return input_df
 
 
-def predict_placement(student_data: dict, placement_model, encoder) -> dict:
+def predict_placement(student_data: dict, placement_model, feature_columns) -> dict:
     """
     Predict placement status for a student.
 
@@ -73,7 +72,7 @@ def predict_placement(student_data: dict, placement_model, encoder) -> dict:
         - status: "Placed" or "Not Placed"
         - probability: float (probability of placement)
     """
-    input_df = prepare_input(student_data, encoder)
+    input_df = prepare_input(student_data, feature_columns)
 
     prediction = placement_model.predict(input_df)[0]
     probabilities = placement_model.predict_proba(input_df)[0]
@@ -87,7 +86,7 @@ def predict_placement(student_data: dict, placement_model, encoder) -> dict:
     }
 
 
-def predict_company(student_data: dict, company_model, encoder) -> dict:
+def predict_company(student_data: dict, company_model, feature_columns) -> dict:
     """
     Predict company type for a placed student.
 
@@ -97,7 +96,7 @@ def predict_company(student_data: dict, company_model, encoder) -> dict:
         - company_type: "Product Based" or "Service Based"
         - probability: float (probability of product-based company)
     """
-    input_df = prepare_input(student_data, encoder)
+    input_df = prepare_input(student_data, feature_columns)
 
     prediction = company_model.predict(input_df)[0]
     probabilities = company_model.predict_proba(input_df)[0]
@@ -126,10 +125,10 @@ def predict_student(student_data: dict, models_dir: str = "models") -> dict:
         - company_type: str or "N/A"
         - company_confidence: float or None
     """
-    placement_model, company_model, encoder = load_models(models_dir)
+    placement_model, company_model, feature_columns = load_models(models_dir)
 
     # Step 1: Placement prediction
-    placement_result = predict_placement(student_data, placement_model, encoder)
+    placement_result = predict_placement(student_data, placement_model, feature_columns)
 
     result = {
         "placement_status": placement_result["status"],
@@ -140,7 +139,7 @@ def predict_student(student_data: dict, models_dir: str = "models") -> dict:
 
     # Step 2: Company type (only if placed)
     if placement_result["status"] == "Placed":
-        company_result = predict_company(student_data, company_model, encoder)
+        company_result = predict_company(student_data, company_model, feature_columns)
         result["company_type"] = company_result["company_type"]
         result["company_confidence"] = company_result["confidence"]
 
